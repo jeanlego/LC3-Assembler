@@ -1,6 +1,6 @@
 # LC3-Assembler
 /*
-*
+* 
 * by:    Jean-Philippe Legault
 *       Mattias Shroer
 *       Josh Tompkins
