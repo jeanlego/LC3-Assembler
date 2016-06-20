@@ -158,7 +158,7 @@ I=++=~   :,+:,  =, ,             ~:          ,,,,,,,,,,,,,,,,,,,,,?IIII==77I,
 
 static bool debug = false;
 static bool verbose = false;
-static char *pointer[512][10];
+static char *pointer[2048][10];
 static int line[512];
 static bool preHalt = true;
 static int startAdress = 0;
@@ -171,7 +171,7 @@ static bool containsEnd = false;
 // 512 lines max
 // 10 token max
 // 32 char tokean max.
-static char code[512][10][32];
+static char code[2048][10][32];
 static int sizeOfFile=0;
 
 
@@ -310,7 +310,7 @@ returns the hexadecimal start adress.
 int setStartAdress(int index) {
     int output = wrong;
     int d=0;
-    if(strcmp(code[index][d],".ORIG") == 0){
+    if(strcasecmp(code[index][d],".ORIG") == 0){
         d ++;
         int outcome = getNumber(code[index][d], 16, false);
         output = outcome;
@@ -339,11 +339,11 @@ void copy(int *index, int codeLine, int startInd){
 }
 
 int verifyEquality(int *index, int codeLine, char *compare, char *header){
-    if(strcmp(code[codeLine][0],compare) == 0){
+    if(strcasecmp(code[codeLine][0],compare) == 0){
        pointer[*index][0] = header;
        return 1;       
     }
-    else if(strcmp(code[codeLine][1],compare) == 0) {
+    else if(strcasecmp(code[codeLine][1],compare) == 0) {
         return 0;
         //no header because it has pointer.
     }   
@@ -353,7 +353,7 @@ int verifyEquality(int *index, int codeLine, char *compare, char *header){
 bool Known(int *index, int codeLine){
     int startInd =-1;
     if(!containsOrig && codeLine< sizeOfFile){   
-        if(strcmp(code[codeLine][0],".ORIG") == 0){
+        if(strcasecmp(code[codeLine][0],".ORIG") == 0){
             pointer[*index][0] = ".ORIG";
             line[*index] = setStartAdress(codeLine);
             *index = *index+1;
@@ -361,7 +361,7 @@ bool Known(int *index, int codeLine){
         }
     }
     else if(!containsHalt && codeLine< sizeOfFile){
-        if(strcmp(code[codeLine][0],"HALT") == 0){
+        if(strcasecmp(code[codeLine][0],"HALT") == 0){
             pointer[*index][0] = "HALT";
             line[*index] = HALT;
             *index = *index+1;
@@ -446,24 +446,24 @@ bool Known(int *index, int codeLine){
         }
     }
     else if(codeLine< sizeOfFile){
-        if(strcmp(code[codeLine][0],".END") == 0){
+        if(strcasecmp(code[codeLine][0],".END") == 0){
             pointer[*index][0] = "~";
             line[*index] = endME;
             containsEnd = true;
             return true;
         }
-        if(strcmp(code[codeLine][0],".FILL") == 0){
+        if(strcasecmp(code[codeLine][0],".FILL") == 0){
             pointer[*index][0] = "  -";
             line[*index] = getNumber(code[codeLine][1], 16, true);
             *index = *index+1;
         }
-        else if(strcmp(code[codeLine][1],".FILL") == 0) {
+        else if(strcasecmp(code[codeLine][1],".FILL") == 0) {
             pointer[*index][0] = code[codeLine][0];
             line[*index] = getNumber(code[codeLine][2], 16, true);
             *index = *index+1;
         }   
     
-        else if(strcmp(code[codeLine][0],".BLKW") == 0){
+        else if(strcasecmp(code[codeLine][0],".BLKW") == 0){
             int length;
             if(strstr(code[codeLine][1], "#")){
                 length = strtol(code[codeLine][1]+1,NULL,10);
@@ -479,7 +479,7 @@ bool Known(int *index, int codeLine){
                 *index = *index+1;
             }while(*index<endInd);
         } 
-        else if(strcmp(code[codeLine][1],".BLKW") == 0){
+        else if(strcasecmp(code[codeLine][1],".BLKW") == 0){
             int length;
             if(strstr(code[codeLine][2], "#")){
                 length = strtol(code[codeLine][2]+1,NULL,10);
@@ -499,7 +499,7 @@ bool Known(int *index, int codeLine){
             }
         } 
         
-        else if(strcmp(code[codeLine][0],".STRINGZ") == 0){
+        else if(strcasecmp(code[codeLine][0],".STRINGZ") == 0){
             //parse the string
             int b=0;
             pointer[*index][0] = "  -";
@@ -514,7 +514,7 @@ bool Known(int *index, int codeLine){
             }
         } 
         
-        else if(strcmp(code[codeLine][1],".STRINGZ") == 0){
+        else if(strcasecmp(code[codeLine][1],".STRINGZ") == 0){
             //parse the string
             int b=0;
             int starterIndex = *index;
@@ -552,10 +552,10 @@ parse aPointer or a number based on first chars.
 int parsePointerOrNumber(int index, int token){
     
     int i =0;
-    while(strcmp(pointer[index][token], pointer[i][0]) != 0 && strcmp(pointer[i][0], "~") != 0){
+    while(strcasecmp(pointer[index][token], pointer[i][0]) != 0 && strcasecmp(pointer[i][0], "~") != 0){
         i ++;
     }
-    if(strcmp(pointer[index][token], pointer[i][0]) == 0){
+    if(strcasecmp(pointer[index][token], pointer[i][0]) == 0){
         if(verbose){
             printf("found matching ptr : %s at Addr. 0x%04x \n", pointer[index][token], (i+ startAdress));
         }
@@ -704,7 +704,7 @@ void writeOpCode(int index, int token){
         line[index]= doNothing;
     }
 
-    else if(strcmp(pointer[index][token],"BR") == 0){
+    else if(strcasecmp(pointer[index][token],"BR") == 0){
         if((ptrNum = parsePointerOrNumber(index, token+2))!=wrong){
             line[index]= BR+ ptrNum;
         }
@@ -713,7 +713,7 @@ void writeOpCode(int index, int token){
             line[index]= wrong;
         }
     }
-    else if(strcmp(pointer[index][token],"BRN") == 0){
+    else if(strcasecmp(pointer[index][token],"BRN") == 0){
         if((ptrNum = parsePointerOrNumber(index, token+2))!=wrong){
             line[index]= BRN+ ptrNum;
         }
@@ -722,7 +722,7 @@ void writeOpCode(int index, int token){
             line[index]= wrong;
         }
     }
-    else if(strcmp(pointer[index][token],"BRZ") == 0){
+    else if(strcasecmp(pointer[index][token],"BRZ") == 0){
         if((ptrNum = parsePointerOrNumber(index, token+2))!=wrong){
             line[index]= BRZ+ ptrNum;
         }
@@ -731,7 +731,7 @@ void writeOpCode(int index, int token){
             line[index]= wrong;
         }
     }
-    else if(strcmp(pointer[index][token],"BRP") == 0){
+    else if(strcasecmp(pointer[index][token],"BRP") == 0){
         if((ptrNum = parsePointerOrNumber(index, token+2))!=wrong){
             line[index]= BRP+ ptrNum;
         }
@@ -740,7 +740,7 @@ void writeOpCode(int index, int token){
             line[index]= wrong;
         }
     }
-    else if(strcmp(pointer[index][token],"BRNZ") == 0){
+    else if(strcasecmp(pointer[index][token],"BRNZ") == 0){
         if((ptrNum = parsePointerOrNumber(index, token+2))!=wrong){
             line[index]= BRNZ+ ptrNum;
         }
@@ -749,7 +749,7 @@ void writeOpCode(int index, int token){
             line[index]= wrong;
         }
     }
-    else if(strcmp(pointer[index][token],"BRZP") == 0){
+    else if(strcasecmp(pointer[index][token],"BRZP") == 0){
         if((ptrNum = parsePointerOrNumber(index, token+2))!=wrong){
             line[index]= BRZP+ ptrNum;
         }
@@ -758,7 +758,7 @@ void writeOpCode(int index, int token){
             line[index]= wrong;
         }
     }
-    else if(strcmp(pointer[index][token],"BRNP") == 0){
+    else if(strcasecmp(pointer[index][token],"BRNP") == 0){
         if((ptrNum = parsePointerOrNumber(index, token+2))!=wrong){
             line[index]= BRNP+ ptrNum;
         }
@@ -767,7 +767,7 @@ void writeOpCode(int index, int token){
             line[index]= wrong;
         }
     }
-    else if(strcmp(pointer[index][token],"BRNZP") == 0){
+    else if(strcasecmp(pointer[index][token],"BRNZP") == 0){
         if((ptrNum = parsePointerOrNumber(index, token+2))!=wrong){
             line[index]= BRNZP+ ptrNum;
         }
@@ -776,7 +776,7 @@ void writeOpCode(int index, int token){
             line[index]= wrong;
         }
     }
-    else if(strcmp(pointer[index][token],"JMP") == 0){
+    else if(strcasecmp(pointer[index][token],"JMP") == 0){
         if((regS = sr(index, token+2))!=wrong){
             line[index]= JMP+ regS;
         }
@@ -785,7 +785,7 @@ void writeOpCode(int index, int token){
             line[index]= wrong;
         }
     }
-    else if(strcmp(pointer[index][token],"JSR") == 0){
+    else if(strcasecmp(pointer[index][token],"JSR") == 0){
         if((off11 = offSet11(index, token+1)) != wrong){
             line[index]= JSR +off11;
         }
@@ -794,7 +794,7 @@ void writeOpCode(int index, int token){
             line[index]= wrong;
         }
     }
-    else if(strcmp(pointer[index][token],"JSRR") == 0){
+    else if(strcasecmp(pointer[index][token],"JSRR") == 0){
         if((regS = sr(index, token+2))!=wrong){
             line[index]= JSRR+ regS;
         }
@@ -803,7 +803,7 @@ void writeOpCode(int index, int token){
             line[index]= wrong;
         }
     }
-    else if(strcmp(pointer[index][token],"LDI") == 0){
+    else if(strcasecmp(pointer[index][token],"LDI") == 0){
         if((regD = dr(index, token+1))!=wrong&&(ptrNum = parsePointerOrNumber(index, token+2))!=wrong){
             line[index]= LDI + regD + ptrNum;
         }
@@ -812,7 +812,7 @@ void writeOpCode(int index, int token){
             line[index]= wrong;
         }
     }
-    else if(strcmp(pointer[index][token],"LDR") == 0){
+    else if(strcasecmp(pointer[index][token],"LDR") == 0){
         if((regD = dr(index, token+1))!=wrong&&(regS = sr(index, token+2))!=wrong &&(off6 = offSet6(index, token+3)) != wrong){
             line[index]= LDR + regD + regS + off6;
         }
@@ -821,7 +821,7 @@ void writeOpCode(int index, int token){
             line[index]= wrong;
         }
     }
-    else if(strcmp(pointer[index][token],"NOT") == 0){
+    else if(strcasecmp(pointer[index][token],"NOT") == 0){
         if((regD = dr(index, token+1))!=wrong&&(regS = sr(index, token+2))!=wrong){
             line[index]= NOT + regD + regS;
         }
@@ -830,13 +830,13 @@ void writeOpCode(int index, int token){
             line[index]= wrong;
         }
     }
-    else if(strcmp(pointer[index][token],"RET") == 0){
+    else if(strcasecmp(pointer[index][token],"RET") == 0){
             line[index]= RET;
     }
-    else if(strcmp(pointer[index][token],"RTI") == 0){
+    else if(strcasecmp(pointer[index][token],"RTI") == 0){
             line[index]= RTI;
     }
-    else if(strcmp(pointer[index][token],"STI") == 0){
+    else if(strcasecmp(pointer[index][token],"STI") == 0){
         if((regD = dr(index, token+1))!=wrong&&(ptrNum = parsePointerOrNumber(index, token+2))!=wrong){
             line[index]= STI + regD + ptrNum;
         }
@@ -845,7 +845,7 @@ void writeOpCode(int index, int token){
             line[index]= wrong;
         }
     }
-    else if(strcmp(pointer[index][token],"STR") == 0){
+    else if(strcasecmp(pointer[index][token],"STR") == 0){
         if((regD = dr(index, token+1))!=wrong&&(regS = sr(index, token+2))!=wrong &&(off6 = offSet6(index, token+3)) != wrong){
             line[index]= STR + regD + regS + off6;
         }
@@ -854,7 +854,7 @@ void writeOpCode(int index, int token){
             line[index]= wrong;
         }
     }
-    else if(strcmp(pointer[index][token],"LD") == 0){
+    else if(strcasecmp(pointer[index][token],"LD") == 0){
         if((regD = dr(index, token+1))!=wrong&&(ptrNum = parsePointerOrNumber(index, token+2))!=wrong){
             line[index]= LD + regD + ptrNum;
         }
@@ -863,7 +863,7 @@ void writeOpCode(int index, int token){
             line[index]= wrong;
         }
     }
-    else if(strcmp(pointer[index][token],"ST") == 0){
+    else if(strcasecmp(pointer[index][token],"ST") == 0){
         if((regD = dr(index, token+1))!=wrong&&(ptrNum = parsePointerOrNumber(index, token+2))!=wrong){
             line[index]= ST + regD + ptrNum;
         }
@@ -872,7 +872,7 @@ void writeOpCode(int index, int token){
             line[index]= wrong;
         }
     }
-    else if(strcmp(pointer[index][token],"ADD") == 0){
+    else if(strcasecmp(pointer[index][token],"ADD") == 0){
         if((regD = dr(index, token+1))!=wrong&&(regS = sr(index, token+2))!=wrong&&(regNum = parseRegisterOrNumber(index, token+3))!=wrong){
             line[index]= ADD + regD + regS + regNum;
         }
@@ -881,7 +881,7 @@ void writeOpCode(int index, int token){
             line[index]= wrong;
         }
     }
-    else if(strcmp(pointer[index][token],"AND") == 0){
+    else if(strcasecmp(pointer[index][token],"AND") == 0){
         if((regD = dr(index, token+1))!=wrong&&(regS = sr(index, token+2))!=wrong&&(regNum = parseRegisterOrNumber(index, token+3))!=wrong){
             line[index]= AND + regD + regS + regNum;
         }
@@ -890,7 +890,7 @@ void writeOpCode(int index, int token){
             line[index]= wrong;
         }
     }
-    else if(strcmp(pointer[index][token],"LEA") == 0){
+    else if(strcasecmp(pointer[index][token],"LEA") == 0){
         if((regD = dr(index, token+1))!=wrong&&(ptrNum = parsePointerOrNumber(index, token+2))!=wrong){
             line[index]= LEA + regD + ptrNum;
         }
@@ -899,7 +899,7 @@ void writeOpCode(int index, int token){
             line[index]= wrong;
         }
     }
-    else if(strcmp(pointer[index][token],"PUTS") == 0){
+    else if(strcasecmp(pointer[index][token],"PUTS") == 0){
         line[index]= PUTS;
     }
     else{
@@ -951,14 +951,14 @@ int main(int argc, char **args){
     
     // pass debug arg
     if(argc >2){
-        if(strcmp(args[2],"-d") ==0){
+        if(strcasecmp(args[2],"-d") ==0){
             debug = true;   
             verbose = true;
         }
-        if(strcmp(args[2],"-v") ==0){
+        if(strcasecmp(args[2],"-v") ==0){
             verbose = true;   
         }
-        if(strcmp(args[2],"-b") ==0){
+        if(strcasecmp(args[2],"-b") ==0){
             binRequest = true;   
         }
     }
@@ -1007,12 +1007,12 @@ int main(int argc, char **args){
         bool halted = false;
         
         //skip starting address
-        while(strcmp(pointer[hexLine][0],".ORIG") != 0){
+        while(strcasecmp(pointer[hexLine][0],".ORIG") != 0){
             hexLine++;
         }
 
         //2nd pass
-        while(strcmp(pointer[++hexLine][0],"HALT") != 0){
+        while(strcasecmp(pointer[++hexLine][0],"HALT") != 0){
             writeOpCode(hexLine, 1);
             if(line[hexLine] == wrong){
                 codeHasError = true;
