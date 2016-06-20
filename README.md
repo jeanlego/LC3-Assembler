@@ -18,7 +18,6 @@ to run with test file cd into directory :
 -b          to get the binary format.
 
 
-*****
 all methods are implemented. 
 i've added some error checking for your asm file
 the output file name is the same as input
