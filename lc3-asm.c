@@ -471,7 +471,11 @@ bool Known(int *index, int codeLine){
             else{
                 length = strtol(code[codeLine][1], NULL, 10);
             }
-            int value = getNumber(code[codeLine][2],16, true);
+            int getNum = code[codeLine][2];
+            int value = 0;
+            if(getNum >= -32768 &&  getNum < 32768){
+                int value = getNumber(getNum,16, true);
+            }
             int endInd = length + *index;
             do{
                 pointer[*index][0] = "  -";
@@ -487,7 +491,11 @@ bool Known(int *index, int codeLine){
             else{
                 length = strtol(code[codeLine][2], NULL, 10);
             }
-            int value = getNumber(code[codeLine][3],16, true);
+            int getNum = code[codeLine][3];
+            int value = 0;
+            if(getNum >= -32768 &&  getNum < 32768){
+                int value = getNumber(getNum,16, true);
+            }
             int endInd = length + *index;
             pointer[*index][0] = code[codeLine][0];
             line[*index] = value;
@@ -1049,7 +1057,7 @@ int main(int argc, char **args){
                 exit(1);
             }
             for(i = 0; i < expand; i++){
-                fprintf(f, "0x%.04X \n", line[i]);
+                fprintf(f, "%.04X \n", line[i]);
             }
             //if binary is required
             if(binRequest){
