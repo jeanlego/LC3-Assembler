@@ -20,6 +20,7 @@ to run with test file cd into directory :
 
 all methods are implemented. 
 i've added some error checking for your asm file
+
 the output file name is the same as input
 
 {file to Assemble}.hex for hex
